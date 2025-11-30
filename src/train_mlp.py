@@ -15,7 +15,9 @@ import os
 import copy
 from torch.nn.utils import clip_grad_norm_
 
-os.makedirs("results", exist_ok=True)
+# --- Carpeta de resultados ---
+RESULTS_DIR = os.path.join("results", "mlp")
+os.makedirs(RESULTS_DIR, exist_ok=True)
 
 # --- 1. Carga y Preprocesamiento de Datos ---
 print("Cargando datos...")
@@ -49,7 +51,9 @@ X = df['cleaned_text']
 y = df['sentiment_label'].values
 
 # División en conjuntos de entrenamiento y prueba
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42, stratify=y
+)
 
 # Vectorización TF-IDF
 print("Vectorizando texto con TF-IDF...")
@@ -138,11 +142,11 @@ for epoch in range(EPOCHS):
     avg_epoch_loss = running_loss / max(1, num_batches)
     epoch_loss_history.append(avg_epoch_loss)
     
-    # Promedio de loss en entrenamiento (ya lo acumulas en running_loss)
+    # Promedio de loss en entrenamiento
     avg_train_loss = running_loss / max(1, num_batches)
     train_loss_history.append(avg_train_loss)
 
-      # --- Evaluación al final de la época ---
+    # --- Evaluación al final de la época ---
     model.eval()
     with torch.no_grad():
         # Accuracy en train
@@ -196,11 +200,12 @@ print("\nReporte de Clasificación:")
 print(report)
 
 # Guardar reporte en archivo .txt
-os.makedirs("results", exist_ok=True)  # crea carpeta si no existe
-with open("results/metrics_report.txt", "w", encoding="utf-8") as f:
+metrics_path = os.path.join(RESULTS_DIR, "metrics_report.txt")
+with open(metrics_path, "w", encoding="utf-8") as f:
     f.write(f"Accuracy: {accuracy:.4f}\n\n")
     f.write("Reporte de Clasificación:\n")
     f.write(report)
+print(f"✅ Reporte guardado en '{metrics_path}'")
 
 # Accuracy por época
 plt.figure(figsize=(8,5))
@@ -212,8 +217,9 @@ plt.title('Evolución de la Accuracy por Epoch')
 plt.legend()
 plt.grid(True, alpha=0.3)
 plt.tight_layout()
-plt.savefig('results/accuracy_curve.png')
-print("✅ Curva de accuracy guardada en 'results/accuracy_curve.png'")
+acc_curve_path = os.path.join(RESULTS_DIR, 'accuracy_curve.png')
+plt.savefig(acc_curve_path)
+print(f"✅ Curva de accuracy guardada en '{acc_curve_path}'")
 
 # Pérdida por época
 plt.figure(figsize=(8,5))
@@ -224,10 +230,11 @@ plt.title('Evolución del Loss por Epoch')
 plt.legend()
 plt.grid(True, alpha=0.3)
 plt.tight_layout()
-plt.savefig('results/loss_curve.png')
-print("✅ Curva de loss guardada en 'results/loss_curve.png'")
+loss_curve_path = os.path.join(RESULTS_DIR, 'loss_curve.png')
+plt.savefig(loss_curve_path)
+print(f"✅ Curva de loss guardada en '{loss_curve_path}'")
 
-#Train vs Validation Loss
+# Train vs Validation Loss
 plt.figure(figsize=(8,5))
 plt.plot(range(1, len(train_loss_history)+1), train_loss_history, label='Train Loss')
 plt.plot(range(1, len(val_loss_history)+1), val_loss_history, label='Validation Loss')
@@ -237,25 +244,35 @@ plt.title("Evolución del Loss de Entrenamiento y Validación")
 plt.legend()
 plt.grid(True, alpha=0.3)
 plt.tight_layout()
-plt.savefig("results/train_val_loss_curve.png")
+train_val_loss_path = os.path.join(RESULTS_DIR, "train_val_loss_curve.png")
+plt.savefig(train_val_loss_path)
 plt.show()
-
-print("✅ Curva de Train/Val Loss guardada en 'results/train_val_loss_curve.png'")
+print(f"✅ Curva de Train/Val Loss guardada en '{train_val_loss_path}'")
 
 # Matriz de Confusión
 cm = confusion_matrix(y_test, y_pred)
 plt.figure(figsize=(8, 6))
-sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=sentiment_map.keys(), yticklabels=sentiment_map.keys())
+sns.heatmap(
+    cm,
+    annot=True,
+    fmt='d',
+    cmap='Blues',
+    xticklabels=sentiment_map.keys(),
+    yticklabels=sentiment_map.keys()
+)
 plt.xlabel('Predicción')
 plt.ylabel('Real')
 plt.title('Matriz de Confusión')
-plt.savefig('results/confusion_matrix_mlp.png')
-print("\nMatriz de confusión guardada en 'results/confusion_matrix_mlp.png'")
+cm_path = os.path.join(RESULTS_DIR, 'confusion_matrix_mlp.png')
+plt.savefig(cm_path)
+print(f"\nMatriz de confusión guardada en '{cm_path}'")
 
 # Guardar el modelo entrenado
-torch.save(model.state_dict(), 'results/mlp_model.pth')
-print("Modelo guardado en 'results/mlp_model.pth'")
+model_path = os.path.join(RESULTS_DIR, 'mlp_model.pth')
+torch.save(model.state_dict(), model_path)
+print(f"Modelo guardado en '{model_path}'")
 
 # Guardar el vectorizador TF-IDF
-joblib.dump(vectorizer, 'results/tfidf_vectorizer.pkl')
-print("Vectorizador guardado en 'results/tfidf_vectorizer.pkl'")
+vec_path = os.path.join(RESULTS_DIR, 'tfidf_vectorizer.pkl')
+joblib.dump(vectorizer, vec_path)
+print(f"Vectorizador guardado en '{vec_path}'")
