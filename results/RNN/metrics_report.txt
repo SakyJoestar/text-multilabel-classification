@@ -1,0 +1,15 @@
+Test metrics for RNN vanilla sentiment classifier
+
+Test Loss: 1.0187
+Test F1 (macro): 0.6104
+Test Accuracy: 0.6557
+
+              precision    recall  f1-score   support
+
+    negative     0.8721    0.6687    0.7569      1835
+     neutral     0.4138    0.6500    0.5056       620
+    positive     0.5302    0.6131    0.5686       473
+
+    accuracy                         0.6557      2928
+   macro avg     0.6053    0.6439    0.6104      2928
+weighted avg     0.7198    0.6557    0.6733      2928

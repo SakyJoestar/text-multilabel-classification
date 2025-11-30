@@ -69,7 +69,9 @@ Para descargarlo de forma automática, sigue estos pasos:
    python scripts/download_dataset.py
    ```
 
-## Ejecutar el entrenamiento y la predicción
+# Entrega 1
+
+## Ejecutar el entrenamiento para el modelo MLP
 
 Desde el directorio raiz siga estos pasos:
 
@@ -91,6 +93,24 @@ Desde el directorio raiz siga estos pasos:
    python src/predict.py
    ```
 
+
 4. **Observar los resultados**
 
    En la carpeta results se puede observar la matriz de confusión.
+
+# Entrega 2
+
+## Ejecutar el entrenamiento para el modelo RNN
+   ```bash
+   python src/train_RNN.py
+   ```
+
+## Ejecutar el entrenamiento para el modelo GRU
+   ```bash
+   python src/train_GRU.py
+   ```
+
+## Predecir usando todos los modelos
+```bash
+python src/predict_all.py
+```
