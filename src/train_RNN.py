@@ -313,6 +313,9 @@ def main():
     USE_CLIPPING = True      # pon False si quieres desactivarlo
     CLIP_MAX_NORM = 1.0      # norma máxima del gradiente
 
+    # 🔧 Usar pesos por clase en la loss (para desbalance)
+    USE_CLASS_WEIGHTS = True
+
     NUM_CLASSES = 3  # negative, neutral, positive
     CLASS_NAMES = ["negative", "neutral", "positive"]
 
@@ -356,11 +359,19 @@ def main():
     test_loader  = DataLoader(test_dataset,  batch_size=BATCH_SIZE)
 
     # ---------------------- Pesos por clase (para desbalance) ----------------------
-    class_counts = train_df["sentiment_label"].value_counts().sort_index().values  # [n_neg, n_neu, n_pos]
-    total_samples = class_counts.sum()
-    num_classes = len(class_counts)
-    class_weights = total_samples / (num_classes * class_counts)
-    class_weights_tensor = torch.tensor(class_weights, dtype=torch.float32, device=DEVICE)
+    if USE_CLASS_WEIGHTS:
+        class_counts = train_df["sentiment_label"].value_counts().sort_index().values
+        total_samples = class_counts.sum()
+        num_classes = len(class_counts)
+        class_weights = total_samples / (num_classes * class_counts)
+        class_weights_tensor = torch.tensor(
+            class_weights, dtype=torch.float32, device=DEVICE
+        )
+        print(f"Usando pesos por clase: {class_weights}")
+        loss_weight = class_weights_tensor
+    else:
+        print("No se están usando pesos por clase.")
+        loss_weight = None
 
     # ---------------------- Modelo ----------------------
     model = SentimentRNN(
@@ -373,7 +384,7 @@ def main():
         dropout=DROPOUT,
     ).to(DEVICE)
 
-    criterion = nn.CrossEntropyLoss(weight=class_weights_tensor)
+    criterion = nn.CrossEntropyLoss(weight=loss_weight)
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
 
     # Scheduler sobre F1 (macro)
