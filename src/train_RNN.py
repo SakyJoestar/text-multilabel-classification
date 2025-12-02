@@ -299,11 +299,11 @@ def plot_confusion_matrix(cm, class_names):
 # ---------------------- MAIN ----------------------
 def main():
     # Hiperparámetros básicos
-    EMBED_DIM = 100
-    HIDDEN_DIM = 128
+    EMBED_DIM = 200
+    HIDDEN_DIM = 256
     NUM_LAYERS = 2
     BIDIRECTIONAL = True
-    DROPOUT = 0.5
+    DROPOUT = 0.4
     BATCH_SIZE = 64
     NUM_EPOCHS = 30
     MIN_FREQ = 2

@@ -64,11 +64,11 @@ def clean_text_mlp(text: str) -> str:
 # ---------------- RNN / GRU: MODELOS + VOCABULARIOS ----------------
 
 # Arquitectura usada en train_rnn / train_gru (ajusta si cambiaste allá)
-EMBED_DIM = 100
-HIDDEN_DIM_RNN = 128
+EMBED_DIM = 200
+HIDDEN_DIM_RNN = 256
 NUM_LAYERS_RNN = 2
 BIDIRECTIONAL = True
-DROPOUT_RNN = 0.5
+DROPOUT_RNN = 0.4
 NUM_CLASSES = 3
 
 
@@ -374,9 +374,9 @@ if __name__ == "__main__":
         "Overall an excellent experience—I'll happily fly with you again.",
     ]
 
-# Unimos y generamos 5 tweets aleatorios de cualquier etiqueta
+# Unimos y generamos 15 tweets aleatorios de cualquier etiqueta
     all_tweets = negative_tweets + neutral_tweets + positive_tweets
-    sample_tweets = random.sample(all_tweets, 5)
+    sample_tweets = random.sample(all_tweets, 15)
 
     for i, tw in enumerate(sample_tweets, start=1):
         print(f"Tweet {i}: '{tw}'")
