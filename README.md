@@ -110,6 +110,10 @@ Desde el directorio raiz siga estos pasos:
    python src/train_GRU.py
    ```
 
+## Ejecutar el entrenamiento para el transformer
+   ```bash
+   python src/train_transformer.py
+   ```
 ## Predecir usando todos los modelos
 ```bash
 python src/predict_all.py

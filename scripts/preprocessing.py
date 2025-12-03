@@ -6,7 +6,7 @@ import nltk
 nltk.download("stopwords")
 
 from nltk.corpus import stopwords
-from nltk.stem import PorterStemmer  # lo dejamos por si luego quieres probar
+from nltk.stem import PorterStemmer  
 
 print("Cargando datos...")
 df = pd.read_csv("data/Tweets.csv")
@@ -57,8 +57,6 @@ def normalize_tokens(tokens):
     for tok in tokens:
         if tok in stop_words:
             continue
-        # Si quieres probar con stemming:
-        # tok = stemmer.stem(tok)
         norm_tokens.append(tok)
     return norm_tokens
 

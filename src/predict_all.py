@@ -1,11 +1,12 @@
+import os
 import torch
 import torch.nn as nn
 import joblib
 import re
 import string
 import json
+from transformers import AutoTokenizer, AutoModelForSequenceClassification
 
-# Para reutilizar el mismo preprocesamiento de la RNN/GRU
 from scripts.preprocessing import preprocess_text as rnn_preprocess_text
 
 # ---------------- CONFIGURACIÓN GENERAL ----------------
@@ -91,7 +92,7 @@ class SentimentRNN(nn.Module):
         self.embedding = nn.Embedding(
             num_embeddings=vocab_size,
             embedding_dim=embed_dim,
-            padding_idx=0,  # asumimos PAD_IDX = 0
+            padding_idx=0, 
         )
 
         self.rnn = nn.RNN(
@@ -140,7 +141,7 @@ class SentimentGRU(nn.Module):
         self.embedding = nn.Embedding(
             num_embeddings=vocab_size,
             embedding_dim=embed_dim,
-            padding_idx=0,  # asumimos PAD_IDX = 0
+            padding_idx=0,  
         )
 
         self.gru = nn.GRU(
@@ -169,6 +170,29 @@ class SentimentGRU(nn.Module):
         logits = self.fc(h)
         return logits
 
+# ---------------- TRANSFORMER: MODELO + TOKENIZER ----------------
+
+from transformers import AutoTokenizer, AutoModelForSequenceClassification
+
+TRANSFORMER_MODEL_DIR = os.path.join("results", "TRANSFORMER", "best_model")
+
+try:
+    transformer_tokenizer = AutoTokenizer.from_pretrained(
+        TRANSFORMER_MODEL_DIR,
+        local_files_only=True
+    )
+    transformer_model = AutoModelForSequenceClassification.from_pretrained(
+        TRANSFORMER_MODEL_DIR,
+        local_files_only=True
+    ).to(DEVICE)
+    transformer_model.eval()
+    TRANSFORMER_AVAILABLE = True
+    print("Transformer cargado correctamente.")
+except Exception as e:
+    print(f"⚠️ Transformer no disponible: {e}")
+    transformer_tokenizer = None
+    transformer_model = None
+    TRANSFORMER_AVAILABLE = False
 
 # ---- utilidades para RNN/GRU ----
 
@@ -213,7 +237,7 @@ rnn_model.load_state_dict(torch.load(RNN_MODEL_PATH, map_location=DEVICE))
 rnn_model.to(DEVICE)
 rnn_model.eval()
 
-# Cargar artefactos GRU (ajusta paths según tu entrenamiento)
+
 GRU_MODEL_PATH = "results/GRU/gru_model.pth"
 GRU_VOCAB_PATH = "results/GRU/gru_vocab.json"
 
@@ -296,9 +320,31 @@ def predict_sentiment(text: str, model_type: str = "mlp") -> str:
 
         predicted_label = label_map[predicted_idx.item()]
         return predicted_label
+    
+    elif model_type == "transformer":
+        if not TRANSFORMER_AVAILABLE:
+            raise RuntimeError("El modelo Transformer no está disponible (no se encontraron archivos).")
+
+        # Tokenizamos igual que en el entrenamiento
+        encoding = transformer_tokenizer(
+            text,
+            truncation=True,
+            padding="max_length",
+            max_length=64,        # mismo MAX_LEN que usaste al entrenar
+            return_tensors="pt",
+        ).to(DEVICE)
+
+        with torch.no_grad():
+            outputs = transformer_model(**encoding)
+            logits = outputs.logits
+            predicted_idx = int(torch.argmax(logits, dim=-1).cpu().item())
+
+        predicted_label = label_map[predicted_idx]
+        return predicted_label
 
     else:
-        raise ValueError(f"Modelo no soportado: {model_type}. Usa 'mlp', 'rnn' o 'gru'.")
+        raise ValueError(f"Modelo no soportado: {model_type}. Usa 'mlp', 'rnn', 'gru' o 'transformer'.")
+
 
 
 # ---------------- EJEMPLO DE USO ----------------
@@ -380,8 +426,10 @@ if __name__ == "__main__":
 
     for i, tw in enumerate(sample_tweets, start=1):
         print(f"Tweet {i}: '{tw}'")
-        print(f"  MLP  -> {predict_sentiment(tw, model_type='mlp')}")
-        print(f"  RNN  -> {predict_sentiment(tw, model_type='rnn')}")
+        print(f"  MLP         -> {predict_sentiment(tw, model_type='mlp')}")
+        print(f"  RNN         -> {predict_sentiment(tw, model_type='rnn')}")
         if GRU_AVAILABLE:
-            print(f"  GRU  -> {predict_sentiment(tw, model_type='gru')}")
+            print(f"  GRU         -> {predict_sentiment(tw, model_type='gru')}")
+        if TRANSFORMER_AVAILABLE:
+            print(f"  Transformer -> {predict_sentiment(tw, model_type='transformer')}")
         print()
