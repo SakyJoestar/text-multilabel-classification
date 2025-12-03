@@ -302,7 +302,7 @@ def main():
     EMBED_DIM = 100
     HIDDEN_DIM = 128
     NUM_LAYERS = 2
-    BIDIRECTIONAL = True
+    BIDIRECTIONAL = False
     DROPOUT = 0.5
     BATCH_SIZE = 64
     NUM_EPOCHS = 30

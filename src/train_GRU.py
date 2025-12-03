@@ -302,7 +302,7 @@ def main():
     EMBED_DIM = 200
     HIDDEN_DIM = 256
     NUM_LAYERS = 2
-    BIDIRECTIONAL = True      # GRU bidireccional (con memoria)
+    BIDIRECTIONAL = False      # GRU bidireccional (con memoria)
     DROPOUT = 0.4
     BATCH_SIZE = 64
     NUM_EPOCHS = 30
