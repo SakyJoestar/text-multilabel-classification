@@ -295,25 +295,39 @@ def plot_confusion_matrix(cm, class_names):
     plt.savefig(os.path.join(RESULTS_DIR, "confusion_matrix_rnn.png"))
     plt.close()
 
+def plot_train_test_loss(train_losses, test_losses):
+    epochs = range(1, len(train_losses) + 1)
+
+    plt.figure()
+    plt.plot(epochs, train_losses, marker="o", label="Train Loss")
+    plt.plot(epochs, test_losses, marker="o", label="Test Loss")
+    plt.xlabel("Epoch")
+    plt.ylabel("Loss")
+    plt.title("Train vs Test Loss - RNN Vanilla")
+    plt.legend()
+    plt.grid(True)
+    plt.tight_layout()
+    plt.savefig(os.path.join(RESULTS_DIR, "train_test_loss_curve_rnn.png"))
+    plt.close()
 
 # ---------------------- MAIN ----------------------
 def main():
     # Hiperparámetros básicos
-    EMBED_DIM = 200
+    EMBED_DIM = 100
     HIDDEN_DIM = 256
-    NUM_LAYERS = 2
+    NUM_LAYERS = 3
     BIDIRECTIONAL = True
-    DROPOUT = 0.4
+    DROPOUT = 0.5
     BATCH_SIZE = 64
-    NUM_EPOCHS = 30
+    NUM_EPOCHS = 30 
     MIN_FREQ = 2
     MAX_LEN = 40
 
-    # 🔧 Gradient clipping (opcional)
-    USE_CLIPPING = True      # pon False si quieres desactivarlo
-    CLIP_MAX_NORM = 1.0      # norma máxima del gradiente
+    #Gradient clipping 
+    USE_CLIPPING = True         
+    CLIP_MAX_NORM = 1.0      
 
-    # 🔧 Usar pesos por clase en la loss (para desbalance)
+    #para desbalance
     USE_CLASS_WEIGHTS = True
 
     NUM_CLASSES = 3  # negative, neutral, positive
@@ -402,6 +416,7 @@ def main():
     train_losses = []
     val_losses   = []
     val_f1s      = []
+    test_losses  = []
 
     # ---------------------- Early Stopping ----------------------
     PATIENCE = 5
@@ -424,6 +439,8 @@ def main():
         train_losses.append(train_loss)
         val_losses.append(val_loss)
         val_f1s.append(val_f1)
+        test_loss, _, _, _, _ = evaluate(model, test_loader, criterion, DEVICE)
+        test_losses.append(test_loss)
 
         print(
             f"Epoch {epoch:02d}/{NUM_EPOCHS} | "
@@ -453,6 +470,7 @@ def main():
 
     # Guardar curvas de entrenamiento
     plot_curves(train_losses, val_losses, val_f1s)
+    plot_train_test_loss(train_losses, test_losses)
 
     # ---------------------- Evaluación en test ----------------------
     print("\nCargando mejor modelo y evaluando en test...")

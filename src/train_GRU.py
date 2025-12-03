@@ -295,6 +295,21 @@ def plot_confusion_matrix(cm, class_names):
     plt.savefig(os.path.join(RESULTS_DIR, "confusion_matrix_gru.png"))
     plt.close()
 
+def plot_train_test_loss(train_losses, test_losses):
+    epochs = range(1, len(train_losses) + 1)
+
+    plt.figure()
+    plt.plot(epochs, train_losses, marker="o", label="Train Loss")
+    plt.plot(epochs, test_losses, marker="o", label="Test Loss")
+    plt.xlabel("Epoch")
+    plt.ylabel("Loss")
+    plt.title("Train vs Test Loss - GRU")
+    plt.legend()
+    plt.grid(True)
+    plt.tight_layout()
+    plt.savefig(os.path.join(RESULTS_DIR, "train_test_loss_curve_gru.png"))
+    plt.close()  
+
 
 # ---------------------- MAIN ----------------------
 def main():
@@ -306,7 +321,7 @@ def main():
     DROPOUT = 0.4
     BATCH_SIZE = 64
     NUM_EPOCHS = 30
-    MIN_FREQ = 2              # min freq para meter palabra al vocab
+    MIN_FREQ = 2            # min freq para meter palabra al vocab
     MAX_LEN = 35              # ajustado a la longitud máxima real (~34 tokens)
 
     NUM_CLASSES = 3  # negative, neutral, positive
@@ -400,6 +415,7 @@ def main():
     train_losses = []
     val_losses   = []
     val_f1s      = []
+    test_losses  = []
 
     # ---------------------- Early Stopping ----------------------
     PATIENCE = 8
@@ -421,6 +437,9 @@ def main():
         train_losses.append(train_loss)
         val_losses.append(val_loss)
         val_f1s.append(val_f1)
+
+        test_loss, _, _, _, _ = evaluate(model, test_loader, criterion, DEVICE)
+        test_losses.append(test_loss)
 
         print(
             f"Epoch {epoch:02d}/{NUM_EPOCHS} | "
@@ -448,6 +467,7 @@ def main():
 
     # Guardar curvas
     plot_curves(train_losses, val_losses, val_f1s)
+    plot_train_test_loss(train_losses, test_losses)
 
     # ---------------------- Evaluación en test ----------------------
     print("\nCargando mejor modelo GRU y evaluando en test...")
