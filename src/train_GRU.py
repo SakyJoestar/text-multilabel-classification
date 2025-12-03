@@ -331,7 +331,7 @@ def main():
     USE_CLIPPING = True
     CLIP_MAX_NORM = 1.0
 
-    # 🔧 Activar / desactivar pesos por clase
+    #Activar / desactivar pesos por clase
     USE_CLASS_WEIGHTS = True
 
     # ---------------------- Construir vocabulario ----------------------
